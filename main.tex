@@ -1,0 +1,312 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{fullpage}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}{Corollary}
+
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\fY}{\field{Y}}
+\newcommand{\fX}{\field{X}}
+\newcommand{\fH}{\field{H}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Nat}{\field{N}}
+\newcommand{\E}{\field{E}}
+\newcommand{\Var}{\mathrm{Var}}
+
+\title{Notes on Betting Potentials and Their Approximations}
+\author{Francesco Orabona}
+\date{April 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Bayesian Potential}
+
+Here we define a Bayesian potential for betting on the outcome of a ``continuous coin''.
+
+Define the outcome at time $t$ of the continuous coin as $g_t \in [-1,1]$.
+Define a potential function of the form
+\[
+f(g_1, \dots, g_{t-1})=E_{\beta} \left[\prod_{i=1}^{t-1}(1+\beta g_i) \right],
+\]
+where $\beta$ is drawn from a distribution with support $[-1,1]$.
+Note that this is more general that the definition of the potential function in the paper that only depends on the sum of the outcomes of the coin and time.
+
+Let's equip such potential function with the following betting fraction
+\[
+\beta_t 
+= \frac{E_\beta[\beta \prod_{i=1}^{t-1}(1+\beta g_i)]}{E_\beta[\prod_{i=1}^{t-1}(1+\beta g_i)]}
+= \frac{E_\beta[\beta \prod_{i=1}^{t-1}(1+\beta g_i)]}{f(g_1, \dots, g_{t-1})}~.
+\]
+This betting fraction comes from the formula $\beta_t=\frac{f(g_1, \dots, g_{t-1},+1)-f(g_1, \dots, g_{t-1},-1)}{f(g_1, \dots, g_{t-1},+1)+f(g_1, \dots, g_{t-1},-1)}$ that is a direct generalization of the one in the paper.
+
+{\bf Yoav:} The last equation for $\beta_t$ seems to be specific for $g_t \in \{-1.+1\}$ not for $g_t \in [-1,+1]$. I believe that in the second case $\beta_t = (\sum g_t)/(\sum g_t^2)$. What would be the potential $F$ be in that case? Can you point me to the place where you derive the potential from the expectation over $\beta$ according to the dirichlet (1/2,1/2) ?
+
+It is easy to show by direct calculation that we have
+\[
+f(g_1,\dots, g_t)=f(g_1, \dots, g_{t-1})(1+g_t \beta_t)~.
+\]
+Moreover, by induction, we can prove that the wealth at time $t$ is exactly equal to $f(g_1,\dots, g_t)$. In fact,
+
+\begin{align*}
+W_t
+&=W_{t-1}(1+g_t \beta_t) \\
+&=f(g_1, \dots, g_{t-1})\left(1+g_t \frac{E_\beta[\beta \prod_{i=1}^{t-1}(1+\beta g_i)]}{f(g_1, \dots, g_{t-1})}\right) \\
+&= f(g_1, \dots, g_{t-1})+ E_\beta\left[g_t \beta \prod_{i=1}^{t-1}(1+\beta g_i)\right] \\
+&=E_\beta\left[(1+g_t \beta) \prod_{i=1}^{t-1}(1+\beta g_i)\right] \\
+&= f(g_1, \dots, g_{t})~.
+\end{align*}
+
+
+
+This allows us also to give a very natural interpretation to the potential function: it is the average wealth for betting fraction drawn according to the chosen distribution.
+
+KT comes from the potential function above, where the distribution over beta is proportional to $\frac{1}{\sqrt{(1-\beta)(1+\beta)}}$ over $(-1,1)$. 
+In particular, we have (from Wolfram Alpha)
+\[
+\int_0^1 x^a (1-x)^b dx
+= \frac{\Gamma(1 + a) \Gamma(1 + b)}{\Gamma(2 + a + b)}~.
+\]
+With the change of variable $\beta=2x-1$, we have
+\[
+\frac{1}{2}\int_{-1}^1 \left(\frac{\beta+1}{2}\right)^a \left(\frac{1-\beta}{2}\right)^b d\beta
+= \frac{\Gamma(1 + a) \Gamma(1 + b)}{\Gamma(2 + a + b)}~.
+\]
+Now observe that the KT potential for binary coins we have
+\[
+\int_{-1}^1 \frac{1}{\pi} (1+\beta)^{a-\frac{1}{2}} (1-\beta)^{b-\frac{1}{2}} d\beta
+= \frac{2^{a+b} \Gamma(\frac{1}{2} + a) \Gamma(\frac{1}{2} + b)}{  \pi \Gamma(1 + a + b)}
+\]
+where $a+b$ is the total number of rounds $t$ and $a$ is the number of times we observed a $+1$. Hence, $\sum_{i=1}^t g_i= 2a-T$ that implies $a=\frac{T+\sum_{i=1}^t g_i}{2}$ and $b=\frac{T-\sum_{i=1}^t g_i}{2}$
+Denoting by $x=\sum_{i=1}^t g_i$, we have
+\[
+\int_{-1}^1 \frac{1}{\pi} (1+\beta)^{\frac{T-1+x}{2}} (1-\beta)^{\frac{T-1-x}{2}} d\beta
+= \frac{2^{t} \Gamma(\frac{T+1+x}{2}) \Gamma(\frac{T+1-x}{2})}{  \pi \Gamma(1 + t)}~.
+\]
+
+The nice closed form solution is a consequence of the choice of the distribution over $\beta$ and the fact that the $g_i$ are in $\{-1,1\}$. However, assuming we could solve the expectation, we could still use the same potential in the case of $g_i$ in $[-1,1]$. 
+
+% Such strategy would work because we already proved that it is a viable betting potential. Also, maybe the above potential can be extended to the continuous time setting, even if I don't know how...
+
+\subsection{Continuous time limit}
+To define the potential in continuous time suppose that we subdivide each unit time
+into $S$ equal parts. We want to see how to scale $g_t$ and $x$ to get a meaningful limit. We start with the expression:
+$$ (1+g\beta)^{\frac{S(T+x)}{2}} (1-g\beta)^{\frac{S(T-x)}{2}} $$
+We can rewrite this expression as
+$$ ((1+g\beta)(1-g\beta))^{\frac{ST}{2}} \left( \frac{1+g\beta}{1-g \beta}\right)^{\frac{Sx}{2}}
+=
+(1-g^2 \beta^2)^{\frac{ST}{2}} \left( \frac{1+g\beta}{1-g \beta}\right)^{\frac{Sx}{2}}
+$$
+
+Consider the first factor:$$f_1=(1-g^2 \beta^2)^{\frac{ST}{2}}$$. Keeping $\beta$ and $T$ constant we let $S$ increase to infinity and consider how $g$ depends on $S$.  
+If $g = o(1/\sqrt{S})$, then $f_1 \to 0$, while if $1/\sqrt{S} = o(g)$ then $f_1 \to \infty$. Only if $g = \Theta(1/\sqrt{S})$ we get that $f_1$ has a non-trivial limit.
+Absorbing any additional constants into $\beta$ we set $g = 1/\sqrt{S}$ and get:
+
+$$ \lim_{S \to \infty} f_1 = \lim_{S \to \infty} \left( \left(1-\frac{\beta^2}{S}\right)^S \right)^{T/2} = e^{-\beta^2 T / 2}$$
+
+Consider next the second factor $$f_2 = \left( \frac{1+g\beta}{1-g \beta}\right)^{\frac{Sx}{2}} = \left( \frac{1+\beta/\sqrt{S}}{1- \beta/\sqrt{S}}\right)^{\frac{Sx}{2}}$$
+
+In order that $f_2$ converges as $S \to \infty$ we set $x = \alpha T / \sqrt{S}$.
+Plugging in this choice and letting $S \to \infty$ we get: 
+\[
+\lim_{S \to \infty} \left( \frac{1+\beta/\sqrt{S}}{1- \beta/\sqrt{S}}\right)^{\frac{\sqrt{S} \alpha}{2}} = 
+\lim_{S \to \infty} \left(\left( 1+2 \beta/\sqrt{S}\right)^{\sqrt{S}} \right)^{\frac{T \alpha}{2}}
+=e^{\beta\alpha}
+\]
+
+Taking the product of the limits of $f_1$ and $f_2$ we get
+\[
+W(\alpha,\beta,T) = \exp \left( \beta \alpha T - \frac{T}{2} \beta^2 \right)  =
+\exp \left( \frac{T}{2} \left( 2 \beta \alpha - \beta^2 \right) \right) =
+\exp \left( -\frac{T}{2} \left( \alpha - \beta \right)^2 + \frac{T}{2} \alpha^2 \right)
+\]
+The regret (ratio) is:
+\[
+R(\alpha,\beta,T) = \frac{W(\alpha,\beta,T)}{W(\alpha,\alpha,T)} = 
+\frac{\exp \left( -\frac{T}{2} \left( \alpha - \beta \right)^2 + \frac{T}{2} \alpha^2 \right)}{\exp \left( \frac{T}{2} \alpha^2 \right)} = \exp \left( -\frac{T}{2} \left( \alpha - \beta \right)^2 \right)
+\]
+
+$R(\cdot,\beta,\cdot)$ is (up to a normalization factor) a Gaussian distribution centered at $\alpha$.
+
+Considering a pseudo Bayesian algorithm that uses the uniform distribution over the real line as a "pseudo-prior". The regret of this algorithm is
+\[\int_{-\infty}^{+\infty} R(\alpha,\beta,T) d\beta
+= \int_{-\infty}^{+\infty} \exp \left( -\frac{T}{2} \left( \alpha - \beta \right)^2 \right) d\beta
+= \sqrt{\frac{T}{8 \pi}}
+\]
+
+As the integral does not depend on $\alpha$, the uniform pseudo-distribution is the best choice.
+
+\section{back to finite}
+
+Once we found what is the continuous time potential, we use that potential to define our algorithm (we already know what $\beta$ will be. For finite steps the potential will increase a little bit at each iteration, and that will give us our regret bound that depends on $\sum_{t=1}^T g_t^2$ instead of $T$.
+
+
+\section{Bayesian Potential in Continuous time}
+
+In this section we replace $f(\cdots)$ with $h(\cdots) \doteq \log(f(\cdots))$
+
+As $f(g_1,\ldots,g^T) = \prod_{t=1}^T (1+\beta_t g_t)$ we have that 
+$h(g_1,\ldots,g^T) = \sum_{t=1}^T \log(1+\beta_t g_t)$
+
+
+\newcommand{\dt}{\Delta t}
+In order to calculate the potential for continuous time, we define a time step $\dt>0$ and replace the times $t=0,1,2,3\ldots,T$ by $\tau=0,\dt,2\dt,\ldots,S$. $\dt=1/T$.
+
+as $T$ increases we need to reduce the range of $g_t$. Clearly $|g_t| \leq \dt$ works, but gives trivial bounds.I strongly believe, based on past work, that the right scaling is $|g_t| \leq \sqrt{\dt}$. It is clearer if we keep the range $[-1,+1]$ for $g_t$ and multiply by $\sqrt{\dt}$
+
+We rewrite the definition of $h$ as 
+\[h(g(0),g(1/\dt),\ldots,g(1)) = \sum_{t=1}^T \log(1+\beta(t\dt) g(t\dt)\sqrt{\dt})
+\]
+Next, we set $\dt = 1/T$ and let $T \to \infty$. Using the Taylor series 
+$\log(1+x) = x-\frac{x^2}{2} +o(x^2)$ we get that 
+\[
+\log(1+\beta_t g_t) \approx \beta_t g_t - \frac{\beta_t^2 g_t^2}{2}
+\]
+
+
+This yields
+\[
+h(g(0),\ldots,g(S)) \approx 
+\sum_{t=0}^{T} 
+\left[\sqrt{\dt}(\beta(t \dt) g(t\dt) - \frac{\dt}{2}(\beta(t \dt) g(t\dt))^2\right]
+\]
+
+\iffalse
+\subsection{stochastic sequence interpretation}
+As $t \to \infty$ we can think of the exponent of the potential as a stochastic Ito process: 
+
+$$h(\tau) = \int_0^t \beta g(\tau)\,dB_\tau + \int_0^t \beta g(\tau)  \,ds.$$
+Where the second integral is the standard Lebesgue-Stiljes integral and the first is an integral wrt the standard Brownian process. The potential can then be written as another stochastic process:
+\[
+f(\tau) = E_{\beta} \left[  \exp(h(\tau)) \right]
+\]
+
+This potential is similar looking to the squint potential but here we add $\frac{1}{2}\beta^2g^2$ while in squint we subtract $\beta^2 g^2$.
+
+My plan to make this into a bound for the standard discrete time is to compute a bound on the difference between the discrete bound and the continuous bound. This bound will give, I expect, a lower order term as $t \to \infty$.
+\fi
+
+\subsection{Calculating a Lower Bound to the Final Wealth}
+Given the above definition, we need only to calculate a lower bound to the wealth in the last round. If we don't mind about getting a somewhat loose lower bound, we can easily get such lower bound in the following way.
+First we need a technical lemma.
+\begin{lemma}
+\label{lemma:l1}
+Let $f(\eta)=-\log(1-|\eta|)-|\eta|$, for $-1 \leq \eta\leq 1 $. Then 
+\[
+f^*(x)=\max_\eta \eta x - f(x) = \max_{-1\leq \eta\leq 1} \eta x - f(x) = |x|-\log(|x|+1)\geq \frac{x^2}{2(|x|+1)}~.
+\]
+\end{lemma}
+%
+\begin{proof}
+By definition,
+\[
+f^*(x)=\max_{\eta} \ \eta x + \log(1-|\eta|)+|\eta|
+\]
+We equal the derivative wrt $\eta$ to zero to find the minimizer
+\[
+x-\frac{sign(\eta^*)}{1-|\eta^*|}+sign(\eta^*)=0
+\]
+From which we have that
+\[
+\eta^*=\frac{x}{|x|+1}~.
+\]
+Notice that $|\eta^*|\leq 1$, hence $\max_{\eta} \ \eta x -f(\eta) = \max_{-1\leq \eta \leq 1} \ \eta x -f(\eta)$.
+Hence
+\[
+f^*(x)= \frac{x^2}{|x|+1} - \log(|x|+1)+\frac{|x|}{|x|+1} = |x|-\log(|x|+1)
+\]
+The second lower bound is proved comparing the derivatives.
+\end{proof}
+
+Now, assume without loss of generality that $\sum_{i=1}^T g_i\geq0$ and define $\hat{\beta}=\frac{\sum_{i=1}^T g_i}{\sum_{i=1}^T g_i^2 + |\sum_{i=1}^T g_i|}$. Define the prior over $\beta$ as $P$ and $Q$ proportional to $P$ in $[\alpha \hat{\beta},\hat{\beta}]$ and 0 otherwise, where is $\alpha$ is a free positive constant less than 1.
+Using the change of measure lemma, we have
+\begin{align*}
+f(g_1, \dots, g_{T})
+&=E_{\beta\sim P} \left[\prod_{i=1}^{T}(1+\beta g_i) \right] \\
+&=E_{\beta\sim P} \left[\exp\left(\sum_{i=1}^{T}\ln(1+\beta g_i)\right) \right] \\
+& \geq \exp\left(E_{\beta\sim Q} \left[\sum_{i=1}^T \ln(1+\beta g_i) \right]-KL(Q,P)\right),
+\end{align*}
+where $KL(Q,P) = E_{h\sim Q}[\ln \frac{Q(h)}{P(h)}]$.
+Given the definition of $Q$, we have
+\[
+KL(Q,P) = -\ln \int_{\alpha \hat{\beta}}^{\hat{\beta}} P(\beta) d\beta~.
+\]
+Notice that $\frac{\log(1+\beta x)-\eta x}{\beta^2 x^2} \geq \frac{\log(1-|\beta|)+|\beta|}{\beta^2}$ for $|x|\leq 1$, hence
+$\log(1+\beta x)\geq \beta x + x^2 [\log(1-|\beta|)+|\beta|]$. So, we obtain
+\begin{align*}
+\E_{\beta\sim Q}\left[\sum_{i=1}^{T} \log(1+\beta g_i)\right]  
+&\geq \E_{\beta\sim Q_t} \left[\beta \sum_{i=1}^T g_i + [\log(1-|\beta|)+|\beta|]\sum_{i=1}^T g_i^2\right]~.
+\end{align*}
+
+Define $\Psi(x)=|x|-\log(|x|+1)$.
+Now, from Lemma~\ref{lemma:l1}, we use the fact that the expression in the expectation in rhs is concave wrt to $\beta$ and the max is attained in $\hat{\beta}$ to have
+\begin{align*}
+\E_{\beta\sim Q} \left[\beta \sum_{i=1}^T g_i + [\log(1-|\beta|)+|\beta|]\sum_{i=1}^T g_i^2\right]
+&\geq \E_{\beta\sim Q}\left[\alpha \hat{\beta} \sum_{i=1}^T g_i + [\log(1-|\alpha\hat{\beta}|)+|\alpha\hat{\beta}|]\sum_{i=1}^T g_i^2\right]\\
+&= \alpha \hat{\beta} \sum_{i=1}^T g_i + [\log(1-|\alpha\hat{\beta}|)+|\alpha\hat{\beta}|]\sum_{i=1}^T g_i^2\\
+&\geq \alpha (\hat{\beta} \sum_{i=1}^T g_i + [\log(1-|\hat{\beta}|)+|\hat{\beta}|]\sum_{i=1}^T g_i^2)\\
+&= \alpha \sum_{i=1}^T g_i^2 \left(\hat{\beta} \frac{\sum_{i=1}^T g_i}{\sum_{i=1}^T g_i^2} + [\log(1-|\hat{\beta}|)+|\hat{\beta}|]\right)\\
+&= \alpha \Psi\left(\frac{|\sum_{i=1}^T g_i|}{\sum_{i=1}^T g_i^2}\right) \sum_{i=1}^T g_i^2,
+%&\geq \alpha\frac{\left(\sum_{i=1}^t g_i\right)^2}{2\left(\left|\sum_{i=1}^t g_i\right|+ \sum_{i=1}^t g_i^2\right)},
+\end{align*}
+where in the second inequality we used the fact that $\frac{\log(1-x|\beta|)+x|\beta|}{x}\geq \log(1-|\beta|)+|\beta|$ because from the first derivative $\frac{\log(1-x|\beta|)+x|\beta|}{x}$ is decreasing for $x \in (0,1]$, and in the last equality we used Lemma~\ref{lemma:l1}.
+
+Putting all together we have
+\begin{align*}
+W_T &= \E_{\beta\sim P}\left[\prod_{i=1}^{T} (1+\beta g_i)\right] \\
+&\geq \exp\left(\alpha \Psi\left(\frac{|\sum_{i=1}^T g_i|}{\sum_{i=1}^T g_i^2}\right) \sum_{i=1}^T g_i^2 + \ln \int_{\alpha \hat{\beta}}^{\hat{\beta}} P(\beta) d\beta\right) \\
+&\geq \exp\left(\alpha \frac{(\sum_{i=1}^T g_i)^2}{2 (\sum_{i=1}^T g_i^2+|\sum_{i=1}^T g_i|)} + \ln \int_{\alpha \hat{\beta}}^{\hat{\beta}} P(\beta) d\beta\right)~.
+\end{align*}
+
+Basically, the wealth will have the right shape and the price we pay for not knowing in advance the optimal betting fraction depends on how much probability mass our prior places around the (approximated) optimal betting fraction.
+
+\subsection{Approximating the Bayesian Potential: Squint Potential}
+
+In the general case, the potential defined in the previous section cannot be calculated in a closed form. So, here we present an approximation that in some cases gives us a closed form solution. 
+Consider potentials of the form
+\begin{equation}
+\label{eq:approx_potential}
+f(g_1, \dots, g_{t-1})=E_{\beta} \left[\exp\sum_{i=1}^{t-1}(\beta g_i-\beta^2 g_i^2) \right],
+\end{equation}
+where $\beta$ is drawn from a distribution with support $[-\frac12, \frac12]$.
+This coin-betting potential is hidden in the details of the Squint paper.
+
+It might not be immediate, but this potential is nothing else than a second order approximation of the $\ln(1+x)$ function. In fact, it comes from this inequality 
+\begin{equation}
+\label{eq:ineq}
+1+g_i \beta \geq \exp(\beta g_i - \beta^2 g_i^2), \ \forall \beta \in [-1/2,1/2],
+\end{equation}
+that applied over the products in the Bayesian potential gives the potential in \eqref{eq:approx_potential}.
+
+Associate the betting fraction equal to
+\[
+\beta_t = \frac{E_{\beta} \left[\beta \exp \sum_{i=1}^{t-1}(\beta g_i-\beta^2 g_i^2) \right]}{f(g_1, \dots, g_{t-1})}~.
+\]
+By induction, we can prove that the wealth at time $t$ is lower bounded by $f(g_1, \dots, g_{t})$. Note that the fact that we are using an approximation gives us only a lower bound rather than an equality.
+The proof goes as follows
+\begin{align*}
+W_t
+&=W_{t-1}(1+g_t \beta_t) \\
+&\geq f(g_1, \dots, g_{t-1})\left(1+g_t \frac{E_\beta[\beta \exp \sum_{i=1}^{t-1}(\beta g_i-\beta^2 g_i^2)]}{f(g_1, \dots, g_{t-1})}\right) \\
+&= f(g_1, \dots, g_{t-1})+ E_\beta\left[g_t \beta \exp \sum_{i=1}^{t-1}(\beta g_i-\beta^2 g_i^2)\right] \\
+&=E_\beta\left[(1+g_t \beta) \exp \sum_{i=1}^{t-1}(\beta g_i-\beta^2 g_i^2)\right] \\
+&\geq E_\beta\left[\exp \sum_{i=1}^{t}(\beta g_i-\beta^2 g_i^2)\right] \\
+&= f(g_1, \dots, g_{t}),
+\end{align*}
+where in the last inequality we have used \eqref{eq:ineq}.
+
+So, this potential too is a feasible one and given its shape there is hope to calculate it in a closed form. Also, now we are ``summarizing'' the coins with the statistics of the sum of the $g_i$ and $g_i^2$. Note that the coefficient in front of the $g_i^2$ is not exactly the one coming from a Taylor approximation of the log, but it is probably not a big deal.
+
+Note that in principle, we could refine our approximation considering even higher order terms, and assuming we can still compute the betting fraction in a closed form.
+
+Even in this case, we only need to calculate a lower bound to the wealth in the last round, that depends on the choice of the distribution over $\beta$.
+
+\section{How to Improve Squint?}
+
+I believe that both the Bayesian potential and its approximation seem to be the right ones, assuming we have a good prior. Also, given that Squint already uses the approximated potential, I suspect that in order to get a better second order bound for the learning with expert setting, we need to construct a different reduction from learning with expert advice to coin-betting. The current reduction, the one in AdaNormalHedge and the one in Squint, all heavily hinge on constructing the outcomes of the coins with the instantaneous regret of the algorithm. It is not clear to me this is the right thing to do: I just used it because it worked and because something similar is used in the book of Gabor\&Nicolo'. 
+
+\end{document}

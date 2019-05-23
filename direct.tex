@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{fullpage}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}{Corollary}
+
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\fY}{\field{Y}}
+\newcommand{\fX}{\field{X}}
+\newcommand{\fH}{\field{H}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Nat}{\field{N}}
+\newcommand{\E}{\field{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\dt}{\Delta t}
+\title{From continuous time to discrete time}
+\author{Yoav Freund}
+
+\begin{document}
+\maketitle
+
+\renewcommand{\log}{\mbox{log}_2}
+
+The idea is to use the KT potential as a continuous time potential and figure out what is the slack when finite steps are taken.
+
+\section{Choosing $\beta^*$}
+
+In section 4 of "Coin Betting and parameter free Online Learning, right before equation (4) it says the the best betting ration in
+hind-sight is $\beta_T^* = \left( \sum_{t=1}^T g_t\right)/T$~\footnote{Read: the best value of $\beta$ for constant allocation strategy over iterations $1,\ldots,T$}. this is correct for $g_t = \pm 1$. Lets see what happens if we allow $g_t \in [-1,+1]$
+\[
+\frac{d}{d\beta} \sum_{t=1}^T \ln(1+\beta g_t) = 0
+\]
+We approximate as follows:
+\begin{eqnarray*}
+\frac{d}{d\beta} \sum_{t=1}^T \ln(1+\beta g_t) 
+&=& \sum_{t=1}^T \frac{g_t}{1+\beta g_t} 
+\approx \sum_{t=1}^T g_t \left( 1-\beta g_t +\beta^2 g_t^2 -\beta^3 g_t^3 + \beta^4 g_t^4-\cdots \right)
+\end{eqnarray*}
+suppose $g_t \leq \epsilon$ for all $t$, then (this needs to be made precise) we can ignore the terms higher $\beta^2 g_t^2$ and higher and so we have:
+\[
+\sum_{t=1}^T g_t - \sum_{t=1}^T \beta^*_T g_t^2 \approx 0
+\]
+Which finally gives
+\[
+\beta_t^* \approx \frac{\sum_{i=1}^t g_i}{\sum_{i=1}^t g_i^2}
+\]
+So, in the optimal solution $\sum_{i=1}^t g_i^2$ replaces $t$. Of course, if $g_i = \pm 1$ then we get $t$ again.
+
+We define the continuous time $s(t) = \sum_{i=1}^t g_i^2$. 
+
+\section{Wealth}
+Suppose our betting strategy is to use $\beta_t^*$ on iteration $t=1,2,\ldots,T$ and we compare our performance to the clervoyant algorithm that uses $\beta_T^*$  throughout.
+
+For the online algorithm we get that the change in the log wealth is 
+
+$$
+\ln (1+\beta^*_t g_t) = \ln\left(1+ \frac{\sum_{i=1}^{t-1} g_i}{\sum_{i=1}^{t-1} g_i^2} g_t\right)
+$$
+and for the optimal fixed beta it is
+$$
+\ln (1+\beta^*_T g_t) = \ln\left(1+ \frac{\sum_{i=1}^{T} g_i}{\sum_{i=1}^{T} g_i^2} g_t\right)
+$$
+\section{Taylor expansion of potential}
+The KT potential, which is equal to the wealth at the end of the game when starting with 1\$ and playing according to the KT strategy can be written as a continuous function in both $t$ and $x$ (assuming $\epsilon=1$):
+
+\[
+F(t,x) = \frac{2^t \Gamma\left(\frac{t+1+x}{2} \right) \Gamma\left(\frac{t+1-x}{2} \right)}
+{\pi \Gamma(t+1)}
+\]
+
+For convenience, we use $H(t,x) = \log F(t,x)$ Which is equal to
+\[
+H(t,x)=t +  \log \Gamma\left(\frac{t+1+x}{2} \right) +\log \Gamma\left(\frac{t+1-x}{2} \right)
+- \log \pi - \log \Gamma(t+1)
+\]
+as shown below, the optimal value for a a constant allocation ratio $\beta_T$ over the iterations $1,\ldots,T$ is 
+$$
+\beta_T^* \approx \frac{\sum_{t=1}^T g_t}{\sum_{t=1}^T g_t^2}
+$$
+
+Which means that the optimal constant allocation strategy yields a final wealth equal to 
+\[
+W(t,x)
+\]
+We are interested in upper bounding the difference 
+$R(t,x_t+g_t) - R(t-\dt,x_t)$
+The Taylor approximation we use is
+\[
+R(t,x+g_t) - R(t-\dt,x)\approx
+g_t \frac{\partial}{\partial x} R(t,x)
++\frac{g_t^2}{2} \frac{\partial^2}{\partial x^2} R(t,x)
++\dt \frac{\partial}{\partial t} R(t,x)
+\]
+
+I believe the other terms are negligible as $\dt,g_t$ both go to zero. Further, I think the first term that is linear in $g_t$ cancels out with the negative term that comes from considering regret rather than the loss. Then the second order term in $g_t$ and the first order term in $\dt$ should cancel each other out, and we get that $\dt = O(g_t^2)$
+
+We need to play with the constants in the Taylor expression to make the approximation into an inequality. My hope is that this can be done by
+considering the $\log(\Gamma(\cdot))$. 
+
+
+\section{Calculating $\beta_t$ for continuous time}
+Here is the main difference from the finite step algorithm: in the current algorithm
+\[
+\beta_t = \frac{F(t,x_t+1) - F(t,x_t-1)}{F(t,x_t+1) + F(t,x_t-1)}
+\]
+where $x_t = \sum_{i=1}^{t-1} g_i$
+
+Instead, we use
+\[
+\beta_t = \frac{\frac{\partial}{\partial x}F(t,x)}{F(t,x)}
+=\frac{\partial}{\partial x} H(t,x)
+\]
+
+Note that when $x$ is large, the two definitions of $\beta$ converge.
+This choice of $\beta$ allows us to increase $t$ by $\dt < 1$ when $|g_t|<1$.
+
+
+\section{analysis of the regret}
+
+The change in the regret at step $t$ is 
+\[
+r_t = \ln (1+g_t\beta^*) - \ln (1+g_t \beta_t)
+\]
+
+We use the following inequality
+\[
+\forall -1 < x < 1, \;\;\; x > \ln (1+x) > x-x^2
+\]
+
+To get the following inequality
+\[
+r_t \leq g_t \beta^* - g_t \beta_t +g_t^2 \beta_t^2
+\]
+\end{document}
