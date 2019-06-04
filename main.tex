@@ -66,11 +66,14 @@ W_t
 This allows us also to give a very natural interpretation to the potential function: it is the average wealth for betting fraction drawn according to the chosen distribution.
 
 KT comes from the potential function above, where the distribution over beta is proportional to $\frac{1}{\sqrt{(1-\beta)(1+\beta)}}$ over $(-1,1)$. 
+
 In particular, we have (from Wolfram Alpha)
 \[
 \int_0^1 x^a (1-x)^b dx
 = \frac{\Gamma(1 + a) \Gamma(1 + b)}{\Gamma(2 + a + b)}~.
 \]
+{\bf Yoav:} I think there might be a mistake here. When you go from $\prod_{i=1}^{t-1}(1+\beta g_i)]$ to $x^a (1-x)^b$. you need to account for the different permutations that give you $a$ and $b$ which are something like ${a+b \choose a}$.
+
 With the change of variable $\beta=2x-1$, we have
 \[
 \frac{1}{2}\int_{-1}^1 \left(\frac{\beta+1}{2}\right)^a \left(\frac{1-\beta}{2}\right)^b d\beta
