@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{fullpage}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}{Corollary}
+
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\fY}{\field{Y}}
+\newcommand{\fX}{\field{X}}
+\newcommand{\fH}{\field{H}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Nat}{\field{N}}
+\newcommand{\E}{\field{E}}
+\newcommand{\Var}{\mathrm{Var}}
+
+\title{Coin betting potential For Continuous time}
+\author{Yoav Freund}
+\date{July 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{scaled coin betting game}
+
+Log loss and Coin betting have the same type of loss. With one important difference: in Coin betting $g_i$ is allowed between $[-1,+1]$ while in log loss it can only be the end points.
+
+Thinking of these as games between the player and the adversary, it is clear that the end points are, in fact the best for the adversary, so it might seem we can ignore the values between -1 and +1. However, we can get a tighter bound on the regret if we allow the player to take advantage of sub-optimal play by the adversary.
+
+To be specific, consider the following variant of the coin game:
+\begin{itemize}
+\item The player chooses, in addition to $\beta_t \in [-1,+1]$, a bound $d_t \in [0,1]$ on the choice of the adversary.
+\item The adversary chooses $g_t \in [-d_t,+d_t]$
+\end{itemize}
+
+
+We redefine excellent potential to be a function $F(t,x)$ such that for any $t,x,d,|g| \leq d$, it holds that 
+\begin{equation} \label{eqn:condition}
+F(t,x)\cdot(1+\beta g) \geq F(t+d^2,x+g)
+\end{equation}
+where 
+\begin{equation} \label{eqn:beta}
+\beta = \frac{F(t+d^2,x+d)-F(t+d^2,x-d)}{(F(t+d^2,x+d)+F(t+d^2,x-d))d}
+\end{equation}
+
+The potential (wealth) from the coin-betting paper:
+\[
+Q(x,t) = \frac{1}{2\sqrt{t}} \exp\left( T D_{KL} \left(\left. \frac{1}{2}+\frac{x}{2t} \right\| \frac{1}{2} \right)\right)
+\geq \frac{1}{2\sqrt{t}} \exp(x^2/2t) = F(t,x)
+\]
+Where $x = \sum_{i=1}^t \gamma_i$ and $\gamma_i = \pm 1$
+
+The NormalHedge potential $F(t,x) = \frac{1}{\sqrt{t}} \exp(x^2/2t)$ satisfies this condition. Observe the following scaling rule which holds for any $a \neq 0$
+\begin{equation} \label{eqn:scaling}
+F(a^2t,ax) = \frac{1}{\sqrt{a^2t}} e^{\frac{a^2 x^2}{2a^2t}}
+=
+\frac{1}{a\sqrt{t}} e^{\frac{x^2}{2t}} = \frac{1}{a} F(t,x)
+\end{equation}
+
+Using the scaling rule~(\ref{eqn:scaling}) and the existing proof that  equations~(\ref{eqn:condition},\ref{eqn:beta}) hold for $d=1$, we can show that equations~(\ref{eqn:condition},\ref{eqn:beta}) hold for any $d \neq 0$. 
+
+We define scaled versions of $t,x,g$ as follows. We setting $a=1/d$ in \label{eqn:scaling}  and define the scaled variables $t'=t/d^2$, $x'=x/d$, $g' = g/d$ (assuming $g \leq d$ is equivalent to assuming $g' \leq 1$).
+
+Using this re-scaling, we show that equations (\ref{eqn:condition},\ref{eqn:beta}) for general $d$ are equivalent to the same equations for $d=1$, which have already been proven.
+
+The re-scaling of equation~\ref{eqn:beta} yields:
+\[
+\beta 
+= \frac{F(t+d^2,x+d)-F(t+d^2,x-d)}{(F(t+d^2,x+d)+F(t+d^2,x-d))d}
+= \frac{F(t'+1,x'+1)-F(t'+1,x'-1)}{(F(t'+1,x'+1)+F(t'+1,x'-1))d} = \frac{\beta'}{d}
+\]
+Where $\beta'$ is the choice of $\beta$ corresponding to $t',x',d=1$.
+
+Using this choice for $\beta$ we can prove the new condition (\ref{eqn:condition}) for square exponential based on the old condition:
+\begin{eqnarray*}
+F(t,x) (1+\beta g) &=& dF(t / d^2,x/ d) (1+(\beta d)(g/d)) = 
+d F(t',x')\cdot(1 + \beta' g') \\
+&\geq & d F(t'+1,x'+g') = d F(t/d^2 + 1, x/d +g/d)
+= F(t^2 + d^2,x + g)
+\end{eqnarray*}
+
+
+\section{Choosing $\beta$ without knowing $d$}
+
+In the setting above the player chooses $\beta$ based on $d$, this is not natural. But seems to be necessary in order for the condition on the potential to hold for all $t$. However, as $t \to \infty$, (alternatively if $d \to 0$) the optimal choice of $\beta$ converges to $\frac{x}{t}$, which probably also means that using this $d$-independent choice of $\beta$ is optimal on the long term.
+
+\section{The limit $d \to 0$}
+
+Suppose we use a uniform range $g_t \in [-d,d]$ and let $d$ become very small.
+From the analysis of biased coins we can guess the strategy of the optimal adversary. it is to choose some bias $B$ according to the Dirichlet $(1/2,1/2)$ prior, and then to choose $g_t$ IId as follows:
+$g_t = -d_t$ with probability $(1-B d_t)/2$ and $g_t=d_t$ with probability $(1+B d_t)/2$. (The scaling of $B$ with $d_t$ is necessary in order to compensate for the fact that the time step is $d_t^2$. 
+
+I believe that as $d$ decreases to zero, the gap between the algorithmic upper bound, and this lower bound decreases to zero. In other words, this algorithm is min-max optimal.
+
+
+
+\end{document}

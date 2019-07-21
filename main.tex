@@ -2,6 +2,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{fullpage}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
@@ -15,6 +18,14 @@
 \newcommand{\Nat}{\field{N}}
 \newcommand{\E}{\field{E}}
 \newcommand{\Var}{\mathrm{Var}}
+
+\newcommand{\bu}{\boldsymbol{u}}
+\newcommand{\bw}{\boldsymbol{w}}
+\newcommand{\bp}{\boldsymbol{p}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\br}{\boldsymbol{r}}
 
 \title{Notes on Betting Potentials and Their Approximations}
 \author{Francesco Orabona}
@@ -116,9 +127,9 @@ Consider next the second factor $$f_2 = \left( \frac{1+g\beta}{1-g \beta}\right)
 In order that $f_2$ converges as $S \to \infty$ we set $x = \alpha T / \sqrt{S}$.
 Plugging in this choice and letting $S \to \infty$ we get: 
 \[
-\lim_{S \to \infty} \left( \frac{1+\beta/\sqrt{S}}{1- \beta/\sqrt{S}}\right)^{\frac{\sqrt{S} \alpha}{2}} = 
+\lim_{S \to \infty} \left( \frac{1+\beta/\sqrt{S}}{1- \beta/\sqrt{S}}\right)^{\frac{\sqrt{S} \alpha T}{2}} = 
 \lim_{S \to \infty} \left(\left( 1+2 \beta/\sqrt{S}\right)^{\sqrt{S}} \right)^{\frac{T \alpha}{2}}
-=e^{\beta\alpha}
+=e^{\beta\alpha T }
 \]
 
 Taking the product of the limits of $f_1$ and $f_2$ we get
@@ -312,4 +323,203 @@ Even in this case, we only need to calculate a lower bound to the wealth in the 
 
 I believe that both the Bayesian potential and its approximation seem to be the right ones, assuming we have a good prior. Also, given that Squint already uses the approximated potential, I suspect that in order to get a better second order bound for the learning with expert setting, we need to construct a different reduction from learning with expert advice to coin-betting. The current reduction, the one in AdaNormalHedge and the one in Squint, all heavily hinge on constructing the outcomes of the coins with the instantaneous regret of the algorithm. It is not clear to me this is the right thing to do: I just used it because it worked and because something similar is used in the book of Gabor\&Nicolo'. 
 
+\section{New Thoughts}
+
+The potential used in NormalHedge, AdaNormalHedge, KT is roughly of the form
+\[
+\phi_{t-1}(x) = \exp\left( \frac{x^2}{4 t} - \sum_{i=1}^t \frac{1}{i}\right)~.
+\]
+
+This potential can be rewritten as
+\[
+\phi_{t-1}(x) = \max_{\beta} \ \left(\psi_{t-1}(x,
+\beta):=\exp\left( \beta x -\beta^2 t - \sum_{i=1}^t \frac{1}{i}\right)\right)~.
+\]
+Rewriting the potential in this way allows us to quickly prove that this potential works. Also, it might give us a new way to get potentials that depends on $\sum_{t=1}^T g_t^2$.
+
+First, let's see why this works. We have to show for a suitable choice of $\beta_t$ that
+\[
+\phi_{t-1}(x)(1+\beta_t g) \geq \phi_t(x+g),
+\]
+where $|g_t|\leq1$. Here, we will pick $\beta_t=\arg\max_\beta \ \psi_{t-1}(x,\beta) = \frac{x}{2t}$.
+So, we have
+\begin{align*}
+\phi_{t-1}(x)(1+\beta_t g) 
+&=\psi_{t-1}(x,\beta_t) (1+\beta_t g) \\
+&=\exp\left( \beta_t x -\beta_t^2 t - \sum_{i=1}^t \frac{1}{i}\right) (1+\beta_t g) \\
+&\geq \exp\left( \beta_t (x+g) -\beta_t^2 (t+g^2) - \sum_{i=1}^t \frac{1}{i}\right) \\
+&\geq \exp\left( \beta_t (x+g) -\beta_t^2 (t+1) - \sum_{i=1}^t \frac{1}{i}\right),
+\end{align*}
+where we have used the inequality $1+x\geq \exp(x-x^2), \forall x \in [-1/2,1/2]$ and the fact that $|\beta_t|\leq 1/2$.
+Now observe that $\beta_{t+1}$ is the argmax of $\beta(x+g)-\beta^2(t+1)$ wrt $\beta$, hence
+\begin{equation}
+\label{eq:quadratic}
+\beta_t (x+g) -\beta_t^2 (t+1)
+= \beta_{t+1} (x+g) -\beta_{t+1}^2 (t+1) - (\beta_{t+1}-\beta_t)^2 (t+1)~.
+\end{equation}
+Now observe that
+\begin{align*}
+\left| \beta_{t+1}-\beta_t\right|
+&= \left| \frac{x+g}{2 (t+1)}-\frac{x}{2 t}\right| 
+= \left| \frac{x t+g t - x t -x}{2 t(t+1)}\right| 
+\leq \frac{|g| t +|x|}{2 t(t+1)} 
+\leq \frac{|g| t +t}{2 t(t+1)} 
+\leq \frac{1}{t+1},
+\end{align*}
+where we used the fact that $|x|\leq t$.
+
+Hence, putting all together, we have
+\begin{align*}
+\phi_{t-1}(x)(1+\beta_t g) 
+&\geq \exp\left( \beta_t (x+g) -\beta_t^2 (t+1) - \sum_{i=1}^t \frac{1}{i}\right) \\
+&\geq \exp\left( \beta_{t+1} (x+g) -\beta_{t+1}^2 (t+1) - \frac{1}{t+1}- \sum_{i=1}^t \frac{1}{i}\right) \\
+&= \exp\left( \beta_{t+1} (x+g) -\beta_{t+1}^2 (t+1) - \sum_{i=1}^{t-1} \frac{1}{i}\right) \\
+&= \phi_{t}(x+g)~.
+\end{align*}
+
+Now the next steps: The above works because it makes use of the fact that the particular shape of the potential function can be written as the maximization of the exponential of a polynomial, and that polynomial works perfectly with the key inequality $1+x\geq \exp(x-x^2), \forall x \in [-1/2,1/2]$. Note that $g^2$ appears in the proof, but we upper bound it with 1. Could we keep it around with this approach? Probably not, for two reasons: 1) the expression $\beta_t=\frac{x}{\sum_{i=1}^t g_i^2}$ can be bigger than 1 in absolute value; 2) even changing the formula of $\beta_t$ a potential of the form $\exp(\frac{x^2}{\sum_{i=1}^t g_i^2})$ cannot be the right one. To see this last point, consider the case that $g_i=g$ for all $i=1,\dots, t$. In this case, the optimal constant betting strategy (our competitor) would be always a fraction of one with sign equal to the sign of $g$ and it would obtain a wealth of 
+\[
+\prod_{i=1}^t (1+|g|) 
+= \exp( t \log(1+|g|)) 
+\approx \exp(|g| t)~. 
+\]
+On the other hand, if a potential of the form $\exp(\frac{x^2}{\sum_{i=1}^t g_i^2})$ were possible, in the same situation we would obtain a wealth of the form
+\[
+\exp(\frac{(\sum_{i=1}^t g_i)^2}{\sum_{i=1}^t g_i^2})
+= \exp(\frac{g^2 t^2}{t g^2})
+= \exp(t),
+\]
+that can be arbitrarily bigger than the wealth of the competitor. This seems impossible!
+
+So, to adapt the above proof to obtain $g_i^2$ terms, I need a new inequality. The inequality $1+x\geq \exp(x-x^2), \forall x \in [-1/2,1/2]$ is not powerful enough. In particular, I need an inequality that gives rise to an expression that when maximized wrt to $\beta$ always give a number between -1 and 1. In this way, the proof above would naturally give me the right potential and the right betting fraction.
+I claim that the right inequality is the following one:
+\[
+1+\beta g \geq \exp\left(\beta g + g^2\left(\log(1-|\beta|)+|\beta|\right)\right)~.
+\]
+The above should work for any $\beta$ and $g$ in $[-1,1]$, even if I proved it sometime ago and I don't have the proof anymore...
+I claim the above gives rise to $\beta_t$ that are always between $-1$ and $1$. Also, it allows to use the $g_i^2$. The only part of the proof that should be worked out is the step in \eqref{eq:quadratic}, because the expression is not a quadratic anymore. However, it behaves like a quadratic, in particular by strong convexity and smoothness I think it should work.
+
+\section{From betting to experts}
+
+1d learner: input is $\hat{g}_t \in[-1,1]$, output is $w_t$, objective is to maximize $\sum_{t=1}^T w_t \hat{g}_t$.
+
+Hyp: $\sum_{t=1}^T w_t \hat{g}_t \geq F(\sum_{t=1}^T \hat{g}_t)$.
+
+Expert prediction: probability distribution $\boldsymbol{p}_{t,i}$ is $\propto \pi_i \max(w_{t,i},0)$.
+
+Receive the gains $\boldsymbol{g}_t$.
+
+Construct $\hat{g}_{t,i}$: $\hat{g}_t \approx g_{t,i} - \langle \boldsymbol{g}_t, \boldsymbol{p}_t\rangle$ (correct assuming $\bw_{t,i}>0$)
+
+Claim:
+Let's define $f(x)=\ln(F(x))$
+\[
+Regret(\boldsymbol{q}) \leq f^{-1}\left(KL\left(\boldsymbol{q},\bodlsymbol{\pi}\right)\right)
+\]
+
+KT, exp(x^2/T): $f^{-1}(x)=\sqrt{T x}$
+
+Potential of 1d learner is $\exp(\eta x)$,  $f^{-1}(x)=x/\eta$
+
+
+Short proof using Fenchel dual of KL divergence (that is the log partition function):
+Assume $\log F(x)$ to be convex
+
+\begin{align*}
+\log F(\langle \bu, \boldsymbol{G}\rangle)
+\leq \sum_{i=1}^N u_i \log F(G_i)
+\leq KL(\bu \| \boldsymbol{\pi}) + \log\left(\sum_{i=1}^N \pi_i F(G_i)\right)~.
+\end{align*}
+Note that the entire reduction makes $\sum_{i=1}^N \pi_i F(G_i)\leq 1$. Hence, we have
+\[
+\log F(\langle \bu, \boldsymbol{G}\rangle) 
+\leq KL(\bu \| \boldsymbol{\pi})~.
+\]
+Setting $G_i$ such that $G_i \geq \sum_{t=1}^T (g_{t,i}-\langle \bp_t, \bg_t\rangle)$ we have that $Regret(\bu) \leq \langle \bu, \boldsymbol{G}\rangle$.
+
+
+Can I say that it is enough to have any choice of $\bp_t$ that makes $\log\left(\sum_{i=1}^N \pi_i F(G_i)\right)$ decrease monotonically?
+
+Note that the average money of the bettors on the arms monotonically decreases. Note that it is not simply that $\tilde{g}_{t,i}$ has opposite sign of $w_{t,i}$.
+
+It seems I get the normalization by division of L1, by the following
+\[
+\btheta \rightarrow \log |\btheta|_+ \rightarrow \arg\max_{\bp} \langle \btheta, \bp\rangle - \sum_{i} p_i \log p_i~.
+\]
+Check that the same works for Lp norms.
+Also, in the proof above I take log of potential, not of theta, even if the potential gives the predictions.
+
+\section{Random considerations: work in progress}
+
+We are trying to find a better way to analyze the bandit algorithm with Tsallis entropy. The hope is that such understanding will shed light on the reduction between 1d OLO and experts/bandits.
+The optimal one is obtained with the regularizer $\psi(\bx)=-\sum_{i=1}^N \sqrt{x_i}+\boldsymbol{1}_{\Delta^{N-1}}(\bx)$. This regularizer effectively puts a barrier on 0. Also, the constraint makes the dual not in a close form.
+
+What happens if I use a regularizer of the form $-\sqrt{x(1-x)}$ on each arm and then find a way to normalize the predictions? This puts a barrier on both $0$ and $1$. Reasoning: The entropy function has a similar shape on each coordinate, that is $x \ln(x)$, and it makes the regularizer not decreasing monotonically.
+
+This regularizer is 2-strongly convex on $[-1,1]$, and the curvature increases around 0 and 1.
+
+The argmax of the maximization to find the dual is $\frac{1}{2}+\frac{\theta}{2\sqrt{\theta^2+1}}$, a sigmoid transfer function that maps $\R$ to $[0,1]$.
+The dual is $\psi^\star(\theta)=\frac{1}{2} \left(\theta + \sqrt{1 + \theta^2} \right)$. It looks like an inverted and smoothed hinge loss.
+
+
+Setting $\psi(x)=-\eta\sqrt{x(1-x)}$, we have $ \psi^\star(\theta) = \frac{1}{2} \left(\theta + \sqrt{\eta^2+\theta^2}\right)$, and $\lambda = 2\eta$.
+So, overall we have
+\[
+\langle \theta_T,\bu\rangle
+\leq \eta\left(something-\sum_{i=1}^N \sqrt{x(1-x)}\right)+\frac{1}{4\eta}\sum_{t=1}^T \|\br_t\|^2_2,
+\]
+where ``something'' depends on $F(0)=N \psi^\star(0)$? It should be $\sqrt{N}$. Probably better express it in terms of the primal, to evaluate it over a distribution.
+
+How do we obtain the better bound? We have to sharpen the smoothness bound, using the second derivative of the potential. Note that the original proof requires the losses to be negative, while here we use the instantaneous regret.
+
+However, maybe I can make the update invariant to shifts in $\theta_i$, for example, subtracting the average $\theta_i$ from each of them.
+The regret is independent of scaling of the losses by constant terms on each round, because $\bu$ and $\bp_t$ are distributions:
+
+Hence, I want the algorithm to have the same property! Note that the instantaneous regret gives me this property for free. So, I can consider in the analysis the presence of $-\langle \bp_t, \boldsymbol{\ell_t}\rangle$ only when I need it? I can consider the smoothness inequality using zero shift, because the inner product is already negative! 
+\begin{algorithm}[h]
+\caption{Generic Expert Algorithm}
+\label{alg:bandit}
+\begin{algorithmic}
+\STATE{$\btheta_0=\boldsymbol{0} \in \R^N$}
+\FOR{t=1,\dots,T}
+\STATE{Predict $\bp_t=\frac{\nabla F(\theta_{t-1})}{\|\nabla F(\theta_{t-1})\|_1}$, where $F(\bx)=\sum_{i=1}^N \psi^\star(x_i)$}
+\STATE{Get $\boldsymbol{\ell}_t \in [-1,0]^N$}
+\STATE{Set $\bg_t=\boldsymbol{\ell}_t - \langle \bp_t, \boldsymbol{\ell}_t\rangle$}
+\STATE{Update $\btheta_t=\btheta_{t-1}+\bg_t$}
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+Analysis:
+Note that the algorithm above and the definition of regret are independent of uniform shifts of the loss vector:
+\[
+Regret_T(\bu)=
+\sum_{t=1}^T \langle \boldsymbol{\ell_t}, \bu-\bp_t \rangle
+= \sum_{t=1}^T \langle \boldsymbol{\ell_t}+s_t \boldsymbol{1}, \bu-\bp_t \rangle,
+\]
+for any shift $s_t \in \R, \ t=1,\dots,T$. We will not use this observation in the analysis.
+
+Denote by $F(\btheta)=\sum_{i=1}^N \psi^\star(\theta_i)$. Observe that $Regret_T(\bu)=\langle \btheta_T, \bu\rangle$.
+Summing over the coordinate, we have
+\[
+\langle \theta_T,\bu\rangle - F^*(\bu) 
+\leq F(\btheta_{T}) 
+\leq F(\btheta_{T-1}) + \langle \nabla F(\btheta_{T-1}), \br_{T}\rangle + \frac{1}{2\lambda} \sum_{i=1}^N r_{T,i}^2,
+\]
+where $\lambda$ is the strong convexity of $\psi$.
+Also, set $r_{t+1}$ such that $\langle \nabla F(\btheta_{t}), \br_{t+1}\rangle= 0$, that is $r_{t,i}= \ell_{t,i}-\langle \bp_t, \ell_t \rangle$ and $\bp_t=\frac{\nabla F(\btheta_{t-1})}{\|\nabla F(\btheta_{t-1})\|_1}$.
+
+Given that $F$ is separable, we have $F^\star(\bx)=\sum_{i=1}^N \psi(x_i)$.
+
+The trick is the following: the strong convexity is at least 2, but it can be better when $p_{t,i}$ is close to zero.
+The arm that is pulled should have a loss $\propto \frac{1}{p_{t,i_t}}$, while all the others are constants.
+The Hessian for the coordinate that decreases is of the order of $p_{t,i_t}^{1.5}$. For the other coordinate, it is not negative, so the trick of Jake does not work fully, on the other hand, the minimum strong convexity is 2, can we use it?
+
+
+Another observation:
+\[
+\arg\max \ \langle \btheta,\bx\rangle - f(\bx) 
+=\arg\max \ \langle \hat{\btheta},\bx\rangle - f(\bx) 
+\]
+where $\hat{\btheta}=\btheta+g\bodlsymbol{1}$ and the maximization is over the simplex. This implies that any potential constructed with the constraint of the simplex give rises to updates that are independent of shifts.
 \end{document}

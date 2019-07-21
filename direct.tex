@@ -22,7 +22,7 @@
 \begin{document}
 \maketitle
 
-\renewcommand{\log}{\mbox{log}_2}
+\renewcommand{\log}{\mbox{log}}
 
 The idea is to use the KT potential as a continuous time potential and figure out what is the slack when finite steps are taken.
 
@@ -133,5 +133,27 @@ We use the following inequality
 To get the following inequality
 \[
 r_t \leq g_t \beta^* - g_t \beta_t +g_t^2 \beta_t^2
+\]
+
+\section{Min-Max analysis of coin betting game}
+
+Consider the following variant of the coin betting game. Initial wealth  is $W_0=\epsilon$. At each iteration $t$:
+\begin{enumerate}
+    \item Algorithm chooses a range $v_t \in [0,1]$ and a prediction $\beta_t$
+    \item Adversary chooses a prediction $g_t \in [-v_t,v_t]$
+    \item Wealth is updated as $W_{t+1} = W_t (1+g_t \beta_t)$
+\end{enumerate}
+
+Min-Max strategy for adversary is to choose the coin bias $b$ sccording to the Dirichlet 1/2,1/2 prior and the choose $g_t$ to be $v_t$ with probability $(1+b)/2$  or $-v_t$ with probability $(1-b)/2$.
+
+The expected change in wealth is 
+\[
+E\left[\log \left(\frac{W_{t+1}}{W_t}\right)\right] 
+= E\left[ \log (1+\beta_t g_t)\right] = 
+\frac{1+b}{2}\log (1+\beta_t v_t) + \frac{1-b}{2}\log(1-\beta_t v_t) = 
+\]
+
+\[
+= \frac{1}{2}\log(1-\beta_t^2 v_t^2) + \frac{b}{2}\log\left( \frac{1+\beta_t v_t}{1-\beta_t v_t}\right)
 \]
 \end{document}
