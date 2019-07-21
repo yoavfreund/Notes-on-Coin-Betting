@@ -1,0 +1,97 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{fullpage}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}{Corollary}
+
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\fY}{\field{Y}}
+\newcommand{\fX}{\field{X}}
+\newcommand{\fH}{\field{H}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Nat}{\field{N}}
+\newcommand{\E}{\field{E}}
+\newcommand{\Var}{\mathrm{Var}}
+
+\title{Mixability}
+\author{Yoav Freund}
+\date{July 2019}
+
+\begin{document}
+
+\maketitle
+
+The goal of this note is to characterize cumulative losses where the magnitude of the loss changes from step to step.
+
+More formally, at iteration $i$, the algorithm chooses a prediction $p_i$ and the adversary chooses an outcome $q_i$ and (this is the new thing) a range $r_i$.
+
+The scaled loss on iteration $i$  is $g_i \ell(p_i,q_i)$ where $\ell$ is one of the standard losses such as log loss, square loss, absolute loss or dot loss. (is OLO the same as dot loss?)
+
+
+\section{KT - estimator}
+We generalize the KT estimator for the scaled case: $g \in [0,1]$.
+
+Let the standard definition of log loss, for $x \in \{0,1\}$, be 
+\[
+l(x,p) = x \log \frac{1}{p} + (1-x) \log \frac{1}{1-p}
+\]
+In the weighted log loss we define a weight $g$ for our prediction $x$. In other words, we define 
+\[
+\ell(g,x,p) = a(l(x,p)) = g \left( x \log \frac{1}{p} + (1-x) \log \frac{1}{1-p} \right)
+\]
+
+We follow the analysis in "predicting a binary coin ...". The main fact used in this paper is that the cumulative log loss is {\bf equal} to minus the log of the final total weight, i.e. the normalization of the posterior distribution
+(equation 18). The goal is therefor to lower bound the normalization.
+
+That is done by Laplace method of integration (otherwise known as the saddle-point method), see Theorem 2.
+
+The Laplace method approximates posterior of a single-maximum posterior using a  second order Taylor expansion of the cumulative loss, see Theorem 2.
+
+Let the cumulative loss of the fixed expert which always predicts $p$ be 
+\[
+L_S(p) =  \sum_{i=1}^S \ell(g_i,x_i,p)
+\]
+
+$L_S(p)$ achieves it's minimum at 
+\[
+p^* = \frac{\sum_{i=1}^S g_i x_i}{\sum_{i=1}^S g_i}
+\]
+
+and second derivative of $L_S(p)$ around $p=p^*$ is
+\[
+\left[ \frac{\partial^2}{\partial p^2} L_S(p) \right]_{p=p^*} = \frac{\sum_i g_i}{p^* \cdot (1-p^*)}
+\]
+
+If we use the Dirichlet $(1/2,1/2)$ prior $\frac{\pi}{\sqrt{p *(1-p)}}$, define $T=\sum_i g_i$ we get the same bound on the regret has the same leading term: $\frac{1}{2} \log T$
+
+\section{Mixable losses}
+
+Vovk defines as $a,c$-achievable any loss function for which there is an experts algorithm such that for any sequence and any $N$ experts
+\[
+L_A \doteq a L_{\mbox{min}} + c \ln N
+\]
+
+A loss function is {\em mixable} if there is an achievable pair where $a=1$.
+Mixable losses include log-loss, square loss, Hellinger loss. Absolute loss and dot loss are not mixable.
+
+Vovk proved that if $(a,c)$ is achievable by {\em any algorithm}, then there is a multiplicative weights algorithm that achieves $(a,c)$ and the learning rate of this algorithm is $\eta = a/c$
+
+The bounds on the loss for these algorithms have the same form: $-c \ln \sum_i W_i^{T+1}$.
+
+It is easy to see that for any mixable loss, $$\log \frac{W_i^{t+1}}{W_i^{t}} $$ scales linearly with $g_t$. As a result we can replace $T$ with $\sum_i g_i$
+
+\section{Unmixable losses}
+For unmixable losses it is not possible to achieve a regret of $a \ln N$
+
+One such loss is the dot loss, for which we have bounds of the form $a \sqrt{T}$. This means that if we set $g=1/2$ for all $i$ then the regret would be 
+$\frac{a}{2}\sqrt{T} = a \sqrt{\frac{T}{4}}$ in other words the only consistent way to scale time is ${\Delta T} = 1/g^2$ or $T = \sum_i g_i^2$
+
+\section{Questions}
+
+\begin{items}
+\item In the coin betting 
+\end{items}
+\end{document}
